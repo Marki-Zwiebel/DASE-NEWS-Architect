@@ -9,34 +9,6 @@ import { GeminiService } from './services/geminiService';
 import { StorageService } from './services/storageService';
 
 const App: React.FC = () => {
-  const [apiKeyReady, setApiKeyReady] = useState<boolean>(false);
-  const [isCheckingKey, setIsCheckingKey] = useState(true);
-
-  // Check for API key safely
-  useEffect(() => {
-    const checkKey = () => {
-      try {
-        // Skúsime všetky možné miesta, kde by kľúč mohol byť
-        const keyFromProcess = typeof process !== 'undefined' && process.env ? process.env.API_KEY : undefined;
-        const keyFromWindow = (window as any).process?.env?.API_KEY;
-        
-        const finalKey = keyFromProcess || keyFromWindow;
-        
-        // Ak kľúč nie je "undefined" (string) ani prázdny
-        setApiKeyReady(!!finalKey && finalKey !== "undefined");
-      } catch (e) {
-        console.error("Key check failed", e);
-        setApiKeyReady(false);
-      } finally {
-        setIsCheckingKey(false);
-        // Odstránime loading screen z HTML
-        const ls = document.getElementById('loading-screen');
-        if (ls) ls.style.display = 'none';
-      }
-    };
-    checkKey();
-  }, []);
-
   const [topics, setTopics] = useState<NewsTopic[]>([
     { id: '1', notes: '' },
     { id: '2', notes: '' },
@@ -73,7 +45,6 @@ const App: React.FC = () => {
         console.warn("Sync failed - running in local mode.");
       }
     };
-    // Načítame dáta aj bez API kľúča, aby užívateľ videl aspoň UI
     loadData();
   }, [storage]);
 
@@ -104,7 +75,7 @@ const App: React.FC = () => {
       setCurrentDraft(result);
       setOriginalDraft(result);
     } catch (error: any) {
-      alert("Error: " + (error?.message || "Generation failed."));
+      alert("Problém s generovaním: " + (error?.message || "Skontrolujte, či je API_KEY vo Verceli správne nastavený."));
     } finally {
       setStatus(AppStatus.IDLE);
     }
@@ -131,24 +102,22 @@ const App: React.FC = () => {
       setHistory(updatedHistory);
       await storage.saveHistory(updatedHistory);
       
-      alert("DASE Architect successfully learned from your edits!");
+      alert("DASE Architect sa úspešne naučil váš štýl!");
     } catch (error) {
-      alert("Failed to update style profile.");
+      alert("Nepodarilo sa aktualizovať štýlový profil.");
     } finally {
       setStatus(AppStatus.IDLE);
     }
   };
 
   const handleSelectHistory = (item: NewsletterDraft) => {
-    if (confirm("Restore this draft from history?")) {
+    if (confirm("Obnoviť tento draft z histórie?")) {
       setTopics(item.topics);
       setCurrentDraft(item.content);
       setOriginalDraft(item.content);
       setLanguage(item.language);
     }
   };
-
-  if (isCheckingKey) return null;
 
   return (
     <Layout isCloud={storageConfig.type === 'remote' && !!storageConfig.apiUrl}>
@@ -159,48 +128,17 @@ const App: React.FC = () => {
         onSave={setStorageConfig}
       />
 
-      {/* Setup Guide if API Key Missing */}
-      {!apiKeyReady && (
-        <div className="max-w-2xl mx-auto py-20 px-6 text-center animate-in fade-in zoom-in duration-500">
-          <div className="w-24 h-24 bg-dase-blue/10 text-dase-blue rounded-full flex items-center justify-center mx-auto mb-8 animate-float">
-            <i className="fas fa-key text-4xl"></i>
-          </div>
-          <h2 className="text-3xl font-black text-slate-900 mb-4">Aktivácia DASE Architect</h2>
-          <p className="text-slate-500 mb-10 leading-relaxed font-medium">
-            Aplikácia je pripravená, ale vyžaduje prepojenie s <span className="text-dase-blue font-bold">Google Gemini API</span>. 
-            Vložte váš kľúč do Vercel Environment Variables.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <a 
-              href="https://aistudio.google.com/app/apikey" 
-              target="_blank" 
-              className="p-6 bg-white border border-slate-200 rounded-2xl hover:border-dase-blue transition-all group"
-            >
-              <div className="text-xs font-black text-dase-blue uppercase mb-2">Krok 1</div>
-              <div className="font-bold text-slate-700 group-hover:text-dase-blue">Získať API kľúč</div>
-            </a>
-            <div className="p-6 bg-white border border-slate-200 rounded-2xl opacity-60">
-              <div className="text-xs font-black text-slate-400 uppercase mb-2">Krok 2</div>
-              <div className="font-bold text-slate-500">Pridať API_KEY do Vercelu</div>
-            </div>
-          </div>
-          <p className="mt-12 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-loose">
-            Ak ste kľúč už pridali a vidíte toto, urobte <span className="text-dase-accent underline">Redeploy</span> v Dashboarde Vercelu.
-          </p>
-        </div>
-      )}
-
       {status === AppStatus.GENERATING && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md">
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
             <h3 className="text-lg font-black text-slate-900 tracking-tight">KREUJEM OBSAH...</h3>
-            <p className="text-slate-400 text-sm font-medium">Gemini 3 Pro analyzuje vaše podklady</p>
+            <p className="text-slate-400 text-sm font-medium">Gemini analyzuje vaše podklady</p>
           </div>
         </div>
       )}
 
-      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-10 ${!apiKeyReady ? 'hidden' : ''}`}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
         {/* Left Panel: Workflow */}
         <div className="lg:col-span-4 space-y-8 sticky top-28 h-fit max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
@@ -208,7 +146,7 @@ const App: React.FC = () => {
           <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-dase-blue"></div>
             <div className="absolute top-8 right-8">
-              <button onClick={() => setIsSettingsOpen(true)} className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-300 rounded-full hover:bg-slate-100 hover:text-dase-blue transition-all">
+              <button onClick={() => setIsSettingsOpen(true)} title="Nastavenia" className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-300 rounded-full hover:bg-slate-100 hover:text-dase-blue transition-all">
                 <i className="fas fa-cog text-sm"></i>
               </button>
             </div>
