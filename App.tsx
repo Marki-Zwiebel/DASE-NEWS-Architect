@@ -31,8 +31,19 @@ const App: React.FC = () => {
     };
   });
 
+  // Správne načítanie API kľúča z Vite environment premenných
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+
   const storage = useMemo(() => new StorageService(storageConfig), [storageConfig]);
-  const gemini = useMemo(() => new GeminiService(), []);
+  
+  // Inicializácia GeminiService s API kľúčom
+  const gemini = useMemo(() => {
+    if (!apiKey) {
+      console.error("VITE_GOOGLE_API_KEY is not defined!");
+      return null;
+    }
+    return new GeminiService(apiKey);
+  }, [apiKey]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -69,12 +80,12 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
-    // Priama kontrola kľúča
-    if (!process.env.API_KEY) {
-      alert("CHYBA: API kľúč nenájdený v process.env.API_KEY.\n\n" + 
-            "1. Vo Verceli vytvorte premennú GOOGLE_API_KEY.\n" +
-            "2. Spustite REDEPLOY (voľba 'Ignore build cache').\n" +
-            "3. Skontrolujte, či premenná nemá prefix (musí byť presne GOOGLE_API_KEY).");
+    // Kontrola, či je služba Gemini pripravená
+    if (!gemini) {
+      alert("CHYBA: API kľúč nebol nájdený.\n\n" + 
+            "1. Vo Verceli vytvorte premennú s názvom 'VITE_GOOGLE_API_KEY'.\n" +
+            "2. Vložte do nej svoj Google API kľúč.\n" +
+            "3. Spustite REDEPLOY (voľba 'Ignore build cache').");
       return;
     }
 
@@ -92,7 +103,7 @@ const App: React.FC = () => {
   };
 
   const handleLearnStyle = async () => {
-    if (!currentDraft || !originalDraft) return;
+    if (!currentDraft || !originalDraft || !gemini) return;
     setStatus(AppStatus.LEARNING);
     try {
       const updatedProfile = await gemini.learnStyle(originalDraft, currentDraft, styleProfile);
@@ -134,7 +145,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
             <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Analýza noviniek...</h3>
-            <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest">Model: Gemini 3 Pro</p>
+            <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest">Model: Gemini 1.5 Pro</p>
           </div>
         </div>
       )}
@@ -184,7 +195,8 @@ const App: React.FC = () => {
 
             <button
               onClick={handleGenerate}
-              className="w-full bg-dase-dark text-white font-black py-5 rounded-2xl shadow-xl shadow-slate-200 text-xs uppercase tracking-[0.15em] hover:bg-slate-800 transition-all flex items-center justify-center gap-3"
+              className="w-full bg-dase-dark text-white font-black py-5 rounded-2xl shadow-xl shadow-slate-200 text-xs uppercase tracking-[0.15em] hover:bg-slate-800 transition-all flex items-center justify-center gap-3 disabled:bg-slate-300"
+              disabled={!gemini}
             >
               <i className="fas fa-sparkles"></i>
               Generovať Draft
