@@ -1,21 +1,26 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
-import { StyleProfile, NewsTopic } from "../types";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { StyleProfile, NewsTopic, GoogleGenerativeAI as GoogleGenAIType } from "../types";
 
 export class GeminiService {
+  private ai: GoogleGenAIType;
+
+  constructor(apiKey: string) {
+    if (!apiKey) {
+      throw new Error("API key is required for GeminiService");
+    }
+    this.ai = new GoogleGenerativeAI(apiKey);
+  }
+
   /**
-   * Generuje newsletter pomocou modelu gemini-3-pro-preview.
-   * Striktne využíva process.env.API_KEY injektovaný prostredím.
+   * Generuje newsletter pomocou modelu gemini-1.5-pro-latest.
    */
   async generateNewsletter(
     topics: NewsTopic[], 
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
-    // Striktne dodržiavame pravidlo inicializácie cez process.env.API_KEY.
-    // Shim v index.html zabezpečí, že ak je kľúč vo Verceli pod iným názvom,
-    // v objekte 'process.env' sa objaví aj ako 'API_KEY'.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const model = this.ai.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
     
     const topicsFormatted = topics
       .filter(t => t.notes.trim())
@@ -44,15 +49,9 @@ export class GeminiService {
     `;
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
-        contents: prompt,
-        config: {
-          temperature: 0.8,
-          topP: 0.95
-        }
-      });
-      return response.text || "";
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      return response.text();
     } catch (error: any) {
       console.error("Gemini Error:", error);
       throw error;
@@ -64,8 +63,12 @@ export class GeminiService {
     editedVersion: string, 
     currentProfile: StyleProfile
   ): Promise<StyleProfile> {
-    // Striktne dodržiavame pravidlo inicializácie cez process.env.API_KEY.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const model = this.ai.getGenerativeModel({ 
+      model: "gemini-1.5-pro-latest",
+      generationConfig: {
+        responseMimeType: "application/json",
+      }
+    });
     
     const prompt = `
       Analyze the differences between the 'AI Draft' and the 'User Final Version' for 'DASE NEWS Architect'.
@@ -75,29 +78,13 @@ export class GeminiService {
       USER FINAL VERSION: ${editedVersion}
       CURRENT PROFILE: ${JSON.stringify(currentProfile)}
       
-      Return a refined JSON profile.
+      Return a refined JSON profile in the following structure: { "summary": "...", "vocabulary": ["...", "..."], "tone": "...", "structure": "..." }
     `;
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              summary: { type: Type.STRING },
-              vocabulary: { type: Type.ARRAY, items: { type: Type.STRING } },
-              tone: { type: Type.STRING },
-              structure: { type: Type.STRING },
-            },
-            required: ["summary", "vocabulary", "tone", "structure"]
-          }
-        }
-      });
-
-      const updated = JSON.parse(response.text || "{}");
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+        const updated = JSON.parse(response.text());
       return {
         ...updated,
         lastUpdated: new Date().toISOString()
