@@ -16,13 +16,22 @@ const App: React.FC = () => {
   useEffect(() => {
     const checkKey = () => {
       try {
-        const key = (typeof process !== 'undefined' && process.env?.API_KEY) 
-          || (window as any).process?.env?.API_KEY;
-        setApiKeyReady(!!key);
+        // Skúsime všetky možné miesta, kde by kľúč mohol byť
+        const keyFromProcess = typeof process !== 'undefined' && process.env ? process.env.API_KEY : undefined;
+        const keyFromWindow = (window as any).process?.env?.API_KEY;
+        
+        const finalKey = keyFromProcess || keyFromWindow;
+        
+        // Ak kľúč nie je "undefined" (string) ani prázdny
+        setApiKeyReady(!!finalKey && finalKey !== "undefined");
       } catch (e) {
+        console.error("Key check failed", e);
         setApiKeyReady(false);
       } finally {
         setIsCheckingKey(false);
+        // Odstránime loading screen z HTML
+        const ls = document.getElementById('loading-screen');
+        if (ls) ls.style.display = 'none';
       }
     };
     checkKey();
@@ -64,8 +73,9 @@ const App: React.FC = () => {
         console.warn("Sync failed - running in local mode.");
       }
     };
-    if (apiKeyReady) loadData();
-  }, [storage, apiKeyReady]);
+    // Načítame dáta aj bez API kľúča, aby užívateľ videl aspoň UI
+    loadData();
+  }, [storage]);
 
   useEffect(() => {
     localStorage.setItem('storageConfig', JSON.stringify(storageConfig));
@@ -174,8 +184,8 @@ const App: React.FC = () => {
               <div className="font-bold text-slate-500">Pridať API_KEY do Vercelu</div>
             </div>
           </div>
-          <p className="mt-12 text-slate-400 text-xs font-bold uppercase tracking-widest">
-            Súbor index.html obsahuje shim, kľúč musí byť v <code className="text-dase-accent">process.env.API_KEY</code>
+          <p className="mt-12 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-loose">
+            Ak ste kľúč už pridali a vidíte toto, urobte <span className="text-dase-accent underline">Redeploy</span> v Dashboarde Vercelu.
           </p>
         </div>
       )}
