@@ -14,10 +14,11 @@ export class GeminiService {
   ): Promise<string> {
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      throw new Error("API_KEY nie je definovaný. Vo Verceli ho pridajte s názvom API_KEY.");
+      throw new Error("API_KEY is missing. In Vercel, please ensure you have set the API_KEY environment variable and triggered a Redeploy.");
     }
     
-    const ai = new GoogleGenAI({ apiKey });
+    // Inicializácia presne podľa SDK smerníc
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const topicsFormatted = topics
       .filter(t => t.notes.trim())
@@ -34,11 +35,11 @@ export class GeminiService {
       - KEY VOCABULARY: ${styleProfile.vocabulary.join(', ')}
       - SUMMARY OF STYLE: ${styleProfile.summary}
       
-      OUTPUT FORMAT:
+      OUTPUT FORMAT (CRITICAL):
       1. Start with a single "# [Main Title]" (H1).
       2. For each news item:
          - Use "## [Topic Title]" (H2).
-         - Write 2-3 paragraphs explaining what happened and why it matters for DASE clients.
+         - Write 2-3 paragraphs.
          - End with: "Viac na: [URL]"
     `;
 
@@ -66,7 +67,7 @@ export class GeminiService {
     const apiKey = process.env.API_KEY;
     if (!apiKey) throw new Error("API_KEY missing");
     
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const prompt = `
       Analyze the differences between the 'AI Draft' and the 'User Final Version' for 'DASE NEWS Architect'.

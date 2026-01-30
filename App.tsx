@@ -69,10 +69,16 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
-    // Explicitná kontrola API kľúča
-    const key = process.env.API_KEY;
-    if (!key) {
-      alert("CHYBA: API kľúč chýba.\n\nVo Verceli sa premenná musí volať presne: API_KEY\n\nNezabudni urobiť 'Redeploy' v dashboarde Vercelu po pridaní kľúča!");
+    // Diagnostika
+    if (typeof process === 'undefined') {
+      alert("CHYBA: Objekt 'process' v prehliadači neexistuje. Kontaktujte podporu.");
+      return;
+    }
+
+    if (!process.env?.API_KEY) {
+      alert("CHYBA: API_KEY nie je definovaný v process.env.\n\n" + 
+            "1. Skontrolujte, či sa vo Verceli premenná volá presne API_KEY.\n" +
+            "2. Urobte 'Redeploy' celého projektu (bez cache).");
       return;
     }
 
@@ -141,7 +147,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
             <h3 className="text-lg font-black text-slate-900 tracking-tight">KREUJEM NEWSLETTER...</h3>
-            <p className="text-slate-400 text-sm font-medium">Používam Gemini 3 Pro</p>
+            <p className="text-slate-400 text-sm font-medium">Analýza podkladov cez Gemini 3 Pro</p>
           </div>
         </div>
       )}
@@ -174,7 +180,7 @@ const App: React.FC = () => {
                   </div>
                   <textarea
                     className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
-                    placeholder="Čo sa stalo? (Vložte link a poznámky)"
+                    placeholder="Vložte poznámky k novinke..."
                     value={topic.notes}
                     onChange={(e) => handleTopicChange(topic.id, e.target.value)}
                   />
@@ -198,7 +204,6 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          {/* Style DNA */}
           <div className="bg-gradient-to-br from-dase-blue/5 to-white p-8 rounded-[32px] border border-dase-blue/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 bg-dase-blue rounded-lg flex items-center justify-center text-white text-xs">
@@ -215,7 +220,6 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Panel */}
         <div className="lg:col-span-8">
           <Editor 
             value={currentDraft} 
