@@ -7,11 +7,9 @@
     <title>DASE NEWS Architect | Newsletter Builder</title>
     
     <script>
-      // Zabezpečíme, aby process.env existoval aj v browseri bez bundlera
-      if (typeof window !== 'undefined') {
-        window.process = window.process || {};
-        window.process.env = window.process.env || {};
-      }
+      // Robustnejší shim pre prostredie prehliadača
+      window.process = window.process || {};
+      window.process.env = window.process.env || {};
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>

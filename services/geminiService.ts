@@ -4,7 +4,8 @@ import { StyleProfile, NewsTopic } from "../types";
 
 export class GeminiService {
   /**
-   * Generuje newsletter pomocou gemini-3-pro-preview.
+   * Generuje newsletter pomocou modelu gemini-3-pro-preview.
+   * Premenná prostredia musí byť nastavená ako API_KEY.
    */
   async generateNewsletter(
     topics: NewsTopic[], 
@@ -13,10 +14,9 @@ export class GeminiService {
   ): Promise<string> {
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      throw new Error("API_KEY is not defined in process.env. Please set it in your environment variables.");
+      throw new Error("API_KEY nie je definovaný. Vo Verceli ho pridajte s názvom API_KEY.");
     }
     
-    // Inicializácia priamo podľa smerníc
     const ai = new GoogleGenAI({ apiKey });
     
     const topicsFormatted = topics
@@ -34,16 +34,12 @@ export class GeminiService {
       - KEY VOCABULARY: ${styleProfile.vocabulary.join(', ')}
       - SUMMARY OF STYLE: ${styleProfile.summary}
       
-      OUTPUT FORMAT (CRITICAL):
+      OUTPUT FORMAT:
       1. Start with a single "# [Main Title]" (H1).
       2. For each news item:
          - Use "## [Topic Title]" (H2).
-         - Write 2-3 paragraphs. 1st: What happened? 2nd: Why it matters for DASE clients?
+         - Write 2-3 paragraphs explaining what happened and why it matters for DASE clients.
          - End with: "Viac na: [URL]"
-      3. Use bolding sparingly.
-      
-      INPUT NOTES:
-      ${topicsFormatted}
     `;
 
     try {
@@ -52,13 +48,12 @@ export class GeminiService {
         contents: prompt,
         config: {
           temperature: 0.8,
-          topP: 0.95,
-          thinkingConfig: { thinkingBudget: 0 }
+          topP: 0.95
         }
       });
       return response.text || "";
     } catch (error: any) {
-      console.error("Gemini Generation Error:", error);
+      console.error("Gemini Error:", error);
       throw error;
     }
   }

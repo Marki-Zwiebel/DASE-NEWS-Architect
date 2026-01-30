@@ -69,9 +69,10 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
-    // Diagnostika kľúča pred spustením
-    if (!process.env.API_KEY) {
-      alert("CHYBA: API_KEY nie je definovaný v process.env. Ak ste vo Verceli, pridajte premennú a urobte Redeploy.");
+    // Explicitná kontrola API kľúča
+    const key = process.env.API_KEY;
+    if (!key) {
+      alert("CHYBA: API kľúč chýba.\n\nVo Verceli sa premenná musí volať presne: API_KEY\n\nNezabudni urobiť 'Redeploy' v dashboarde Vercelu po pridaní kľúča!");
       return;
     }
 
@@ -82,7 +83,7 @@ const App: React.FC = () => {
       setOriginalDraft(result);
     } catch (error: any) {
       console.error("Newsletter Generation Failed:", error);
-      alert("Nepodarilo sa vygenerovať draft.\n\nDetail: " + (error?.message || "Neznáma chyba"));
+      alert("Generovanie zlyhalo.\n\nDetail: " + (error?.message || "Neznáma chyba"));
     } finally {
       setStatus(AppStatus.IDLE);
     }
@@ -109,7 +110,7 @@ const App: React.FC = () => {
       setHistory(updatedHistory);
       await storage.saveHistory(updatedHistory);
       
-      alert("DASE Architect sa úspešne naučil váš štýl!");
+      alert("Architect sa úspešne naučil váš štýl!");
     } catch (error) {
       alert("Nepodarilo sa aktualizovať štýlový profil.");
     } finally {
@@ -140,14 +141,14 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
             <h3 className="text-lg font-black text-slate-900 tracking-tight">KREUJEM NEWSLETTER...</h3>
-            <p className="text-slate-400 text-sm font-medium">Analýza vašich podkladov pomocou Gemini 3</p>
+            <p className="text-slate-400 text-sm font-medium">Používam Gemini 3 Pro</p>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
-        {/* Left Panel: NEWS Builder */}
+        {/* Left Panel */}
         <div className="lg:col-span-4 space-y-8 sticky top-28 h-fit max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
           
           <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
@@ -162,17 +163,17 @@ const App: React.FC = () => {
             
             <div className="space-y-6 mb-8">
               {topics.map((topic, index) => (
-                <div key={topic.id} className="group animate-in slide-in-from-left duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                <div key={topic.id} className="group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black text-slate-400">0{index + 1} NEWS ITEM</span>
                     {topics.length > 1 && (
-                      <button onClick={() => removeTopic(topic.id)} className="text-slate-200 hover:text-dase-accent transition-colors">
+                      <button onClick={() => removeTopic(topic.id)} className="text-slate-200 hover:text-dase-accent">
                         <i className="fas fa-times-circle text-sm"></i>
                       </button>
                     )}
                   </div>
                   <textarea
-                    className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white focus:ring-4 focus:ring-dase-blue/10 focus:border-dase-blue outline-none text-sm font-medium text-slate-600 transition-all placeholder:text-slate-300 resize-none"
+                    className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
                     placeholder="Čo sa stalo? (Vložte link a poznámky)"
                     value={topic.notes}
                     onChange={(e) => handleTopicChange(topic.id, e.target.value)}
@@ -197,7 +198,7 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          {/* Style DNA Panel */}
+          {/* Style DNA */}
           <div className="bg-gradient-to-br from-dase-blue/5 to-white p-8 rounded-[32px] border border-dase-blue/10">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 bg-dase-blue rounded-lg flex items-center justify-center text-white text-xs">
@@ -214,7 +215,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Panel: Editor Area */}
+        {/* Right Panel */}
         <div className="lg:col-span-8">
           <Editor 
             value={currentDraft} 
