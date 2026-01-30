@@ -3,10 +3,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { StyleProfile, NewsTopic } from "../types";
 
 export class GeminiService {
-  private ai: GoogleGenAI;
-
-  constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  private getApiKey(): string {
+    try {
+      // Safely access process.env to avoid browser crashes
+      const key = (typeof process !== 'undefined' && process.env && process.env.API_KEY) 
+        || (window as any).process?.env?.API_KEY 
+        || "";
+      return key;
+    } catch {
+      return "";
+    }
   }
 
   async generateNewsletter(
@@ -14,49 +20,44 @@ export class GeminiService {
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new Error("Missing API_KEY. Please set it in Vercel environment variables.");
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
     const topicsFormatted = topics
       .filter(t => t.notes.trim())
-      .map((t, i) => `TOPIC ${i + 1}:\n${t.notes}`)
+      .map((t, i) => `[ITEM ${i + 1}]\n${t.notes}`)
       .join('\n\n---\n\n');
 
     const prompt = `
-      Act as a world-class senior copywriter for DASE, a top-tier digital analytics agency. 
-      Generate technical news items for our monthly report.
+      You are the Senior Technical Editor for DASE Analytics. Your goal is to convert rough notes into a high-quality monthly newsletter.
       
-      LANGUAGE: ${language}
+      TARGET LANGUAGE: ${language}
       
-      STYLE PROFILE TO FOLLOW:
-      - Summary: ${styleProfile.summary}
-      - Tone: ${styleProfile.tone}
-      - Key Vocabulary: ${styleProfile.vocabulary.join(', ')}
+      DASE STYLE GUIDELINES:
+      - TONE: ${styleProfile.tone}
+      - KEY VOCABULARY: ${styleProfile.vocabulary.join(', ')}
+      - SUMMARY OF STYLE: ${styleProfile.summary}
       
-      CRITICAL INSTRUCTIONS:
-      1. START with a single catchy and professional main title for the whole article using "# Title" (H1).
-      2. DO NOT write any introduction, welcome message, or "perex".
-      3. DO NOT write any conclusion, summary, or outro.
-      4. ONLY output the main title followed by the news items.
+      OUTPUT FORMAT (CRITICAL):
+      1. Start with a single "# [Main Title]" (H1). Make it punchy and professional.
+      2. For each news item:
+         - Use "## [Topic Title]" (H2).
+         - Write 2-3 paragraphs. The first should explain what's new. The second should explain "Why this matters for DASE clients".
+         - End each item with: "Viac na: [URL]" (use the link provided in the notes).
+      3. Use bolding (**word**) sparingly for technical terms.
       
-      FOR EACH NEWS TOPIC, YOU MUST GENERATE:
-      1. A professional and catchy sub-heading (h2 or h3 style using ##).
-      2. Exactly 2 to 3 paragraphs of insightful, high-quality content based on the provided notes.
-      3. At the end of EACH topic section, add a source link line: "Viac na: [URL]" 
-         (Extract the URL from the notes if present, otherwise use a placeholder like "Viac na: [ODKAZ NA ZDROJ]").
-      
-      INPUT DATA:
+      INPUT NOTES:
       ${topicsFormatted}
-      
-      TECHNICAL REQUIREMENTS:
-      - Ensure technical accuracy (GA4, GTM, BigQuery, Server-side).
-      - Maintain a professional, data-driven perspective.
-      - If language is Slovak, use professional terminology correctly.
     `;
 
-    const response = await this.ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
       contents: prompt,
       config: {
-        temperature: 0.7,
-        topK: 40,
+        temperature: 0.85,
         topP: 0.95,
       }
     });
@@ -69,30 +70,27 @@ export class GeminiService {
     editedVersion: string, 
     currentProfile: StyleProfile
   ): Promise<StyleProfile> {
+    const apiKey = this.getApiKey();
+    if (!apiKey) throw new Error("API_KEY not found.");
+
+    const ai = new GoogleGenAI({ apiKey });
     const prompt = `
-      You are an expert linguistic analyst. I am providing you with an "AI Draft" and a "User-Refined Version".
+      Analyze the differences between the 'AI Draft' and the 'User Final Version'.
+      Refine the 'Style Profile' to better match the user's personal voice, vocabulary preferences, and formatting nuances.
       
-      Your goal is to learn the user's specific writing nuances (how they shorten sentences, what terminology they prefer, their unique flow) and update their Style Profile.
-      
-      CURRENT STYLE PROFILE:
-      ${JSON.stringify(currentProfile, null, 2)}
-      
-      ORIGINAL AI DRAFT:
-      ---
+      AI DRAFT:
       ${originalDraft}
-      ---
       
-      USER'S FINAL EDITED VERSION:
-      ---
+      USER FINAL VERSION:
       ${editedVersion}
-      ---
       
-      TASK:
-      Update the Style Profile summary, vocabulary, tone, and structure based ONLY on the user's edits.
-      Return the updated Style Profile in JSON format.
+      CURRENT PROFILE:
+      ${JSON.stringify(currentProfile)}
+      
+      Return a refined JSON profile.
     `;
 
-    const response = await this.ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
       contents: prompt,
       config: {

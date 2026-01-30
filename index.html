@@ -4,7 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics News Architect | DASE</title>
+    <title>DASE Architect | Analytics Newsletter Pro</title>
+    
+    <!-- CRITICAL: Prevent "process is not defined" error in production -->
+    <script>
+      window.process = window.process || { env: { API_KEY: "" } };
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -12,29 +18,40 @@
           extend: {
             colors: {
               dase: {
-                blue: '#82C1D1', // Svetlomodrá z nadpisu na screenshote
-                accent: '#E05C6F', // Ružovo-červená z navigácie/metadát
-                dark: '#2D3436',
+                blue: '#82C1D1',
+                accent: '#E05C6F',
+                dark: '#202627',
                 light: '#F4F9FA',
-                header: '#FFFFFF'
+                surface: '#FFFFFF',
+                border: '#E2E8F0'
               }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
             }
           }
         }
       }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; -webkit-font-smoothing: antialiased; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #82C1D1; border-radius: 10px; }
         
-        /* Simulácia DASE blog štýlu pre náhľad */
-        .preview-content h1 { color: #82C1D1; font-weight: 800; font-size: 2.5rem; line-height: 1.2; margin-bottom: 1.5rem; }
-        .preview-content h2 { color: #E05C6F; font-weight: 700; font-size: 1.25rem; margin-top: 2rem; margin-bottom: 1rem; border-left: 3px solid #E05C6F; padding-left: 12px; }
-        .preview-metadata { color: #E05C6F; font-weight: 600; font-size: 0.85rem; display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .preview-content h1 { color: #82C1D1; font-weight: 800; font-size: 2.75rem; line-height: 1.1; margin-bottom: 2rem; letter-spacing: -0.02em; }
+        .preview-content h2 { color: #E05C6F; font-weight: 700; font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 1.25rem; }
+        .preview-content p { color: #334155; line-height: 1.7; margin-bottom: 1.25rem; font-size: 1.05rem; }
+        .preview-metadata { color: #94A3B8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; display: flex; gap: 1rem; margin-bottom: 3rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 1rem; }
+        
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
     </style>
 <script type="importmap">
 {
@@ -47,7 +64,7 @@
 }
 </script>
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="text-slate-900">
     <div id="root"></div>
 </body>
 </html>
