@@ -79,7 +79,7 @@ const App: React.FC = () => {
       let errorMsg = "Nepodarilo sa vygenerovať draft.";
       
       if (error.message?.includes("API key") || error.message?.includes("API Key")) {
-        errorMsg = "CHYBA: API kľúč nie je nastavený. Ak ste ho práve pridali do Vercelu, musíte urobiť REDEPLOY aplikácie, aby sa zmeny prejavili.";
+        errorMsg = "CHYBA: API kľúč nie je dostupný. Ak ste ho práve pridali do Vercelu, urobte REDEPLOY aplikácie (bez cache).";
       }
       
       alert(errorMsg + "\n\nDetaily: " + (error?.message || "Neznáma chyba"));
@@ -109,7 +109,7 @@ const App: React.FC = () => {
       setHistory(updatedHistory);
       await storage.saveHistory(updatedHistory);
       
-      alert("DASE Architect sa úspešne naučil váš štýl!");
+      alert("DASE NEWS Architect sa úspešne naučil váš štýl!");
     } catch (error) {
       alert("Nepodarilo sa aktualizovať štýlový profil.");
     } finally {
