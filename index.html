@@ -6,29 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DASE NEWS Architect | Newsletter Builder</title>
 
-    <script>
-      /**
-       * ROBUSTNÝ ENVIRONMENT SHIM
-       * V prehliadači 'process.env' neexistuje. Tento skript ho vytvorí.
-       * Ak Vercel kvôli cachingu nedodá API_KEY, skúsime nájsť GOOGLE_API_KEY.
-       */
-      (function() {
-        // Vytvoríme globálny objekt process, ak neexistuje
-        window.process = window.process || { env: {} };
-        window.process.env = window.process.env || {};
-        
-        // Ak je v prostredí dostupný kľúč pod iným názvom, namapujeme ho na API_KEY,
-        // ktorý vyžaduje Gemini SDK podľa oficiálnych pravidiel.
-        const env = window.process.env;
-        
-        // Logika pre obídenie Vercel caching bugu:
-        // Ak je API_KEY prázdny, skúsime alternatívy, ktoré používateľ nastavil vo Verceli.
-        if (!env.API_KEY) {
-          env.API_KEY = env.GOOGLE_API_KEY || env.NEXT_PUBLIC_GOOGLE_API_KEY || env.API_KEY || "";
-        }
-      })();
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
