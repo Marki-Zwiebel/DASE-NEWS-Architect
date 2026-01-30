@@ -69,16 +69,11 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
-    // Diagnostika
-    if (typeof process === 'undefined') {
-      alert("CHYBA: Objekt 'process' v prehliadači neexistuje. Kontaktujte podporu.");
-      return;
-    }
+    // Kontrola kľúča (vďaka index.html process.env už existuje ako objekt)
+    const apiKey = process.env?.API_KEY;
 
-    if (!process.env?.API_KEY) {
-      alert("CHYBA: API_KEY nie je definovaný v process.env.\n\n" + 
-            "1. Skontrolujte, či sa vo Verceli premenná volá presne API_KEY.\n" +
-            "2. Urobte 'Redeploy' celého projektu (bez cache).");
+    if (!apiKey) {
+      alert("CHYBA: API kľúč nenájdený.\n\nAk ste vo Verceli:\n1. Skontrolujte Environment Variable s názvom API_KEY.\n2. Urobte 'Redeploy' projektu.");
       return;
     }
 
@@ -147,7 +142,7 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
             <h3 className="text-lg font-black text-slate-900 tracking-tight">KREUJEM NEWSLETTER...</h3>
-            <p className="text-slate-400 text-sm font-medium">Analýza podkladov cez Gemini 3 Pro</p>
+            <p className="text-slate-400 text-sm font-medium">Používam Gemini 3 Pro</p>
           </div>
         </div>
       )}
