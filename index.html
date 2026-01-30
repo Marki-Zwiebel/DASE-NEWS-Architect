@@ -7,8 +7,9 @@
     <title>DASE NEWS Architect | Newsletter Builder</title>
 
     <script>
-      // Zabezpečíme existenciu process.env skôr, než sa načítajú moduly
-      window.process = window.process || { env: {} };
+      // Zabezpečíme existenciu process.env bez premazania existujúcich hodnôt
+      window.process = window.process || {};
+      window.process.env = window.process.env || {};
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>

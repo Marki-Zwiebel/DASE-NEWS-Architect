@@ -69,11 +69,13 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
-    // Kontrola kľúča (vďaka index.html process.env už existuje ako objekt)
-    const apiKey = process.env?.API_KEY;
+    // Explicitná kontrola API_KEY
+    const apiKey = process.env.API_KEY;
 
     if (!apiKey) {
-      alert("CHYBA: API kľúč nenájdený.\n\nAk ste vo Verceli:\n1. Skontrolujte Environment Variable s názvom API_KEY.\n2. Urobte 'Redeploy' projektu.");
+      alert("CHYBA: API kľúč nenájdený v process.env.API_KEY.\n\n" + 
+            "Vo Verceli sa musí premenná volať presne: API_KEY\n" +
+            "Po pridaní kľúča nezabudnite na REDEPLOY (bez cache).");
       return;
     }
 
@@ -119,15 +121,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSelectHistory = (item: NewsletterDraft) => {
-    if (confirm("Obnoviť tento draft z histórie?")) {
-      setTopics(item.topics);
-      setCurrentDraft(item.content);
-      setOriginalDraft(item.content);
-      setLanguage(item.language);
-    }
-  };
-
   return (
     <Layout isCloud={storageConfig.type === 'remote' && !!storageConfig.apiUrl}>
       <SettingsModal 
@@ -141,8 +134,8 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md">
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight">KREUJEM NEWSLETTER...</h3>
-            <p className="text-slate-400 text-sm font-medium">Používam Gemini 3 Pro</p>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Pripravujem podklady...</h3>
+            <p className="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Model: Gemini 3 Pro</p>
           </div>
         </div>
       )}
@@ -160,7 +153,7 @@ const App: React.FC = () => {
               </button>
             </div>
             
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-dase-blue mb-8">NEWS Builder</h2>
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-dase-blue mb-8">Newsletter Architect</h2>
             
             <div className="space-y-6 mb-8">
               {topics.map((topic, index) => (
@@ -175,7 +168,7 @@ const App: React.FC = () => {
                   </div>
                   <textarea
                     className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
-                    placeholder="Vložte poznámky k novinke..."
+                    placeholder="Sem vložte poznámky, linky alebo hrubý text..."
                     value={topic.notes}
                     onChange={(e) => handleTopicChange(topic.id, e.target.value)}
                   />
