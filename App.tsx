@@ -132,106 +132,112 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout isCloud={storageConfig.type === 'remote' && !!storageConfig.apiUrl}>
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
-        config={storageConfig}
-        onSave={setStorageConfig}
-      />
+    <>
+      <p style={{ position: 'fixed', top: 0, left: 0, background: 'white', zIndex: 9999, padding: '5px', border: '1px solid black' }}>
+        API Key: {apiKey ? 'NAČÍTANÝ' : 'CHÝBA'}
+      </p>
+      <Layout isCloud={storageConfig.type === 'remote' && !!storageConfig.apiUrl}>
+        <SettingsModal 
+          isOpen={isSettingsOpen} 
+          onClose={() => setIsSettingsOpen(false)} 
+          config={storageConfig}
+          onSave={setStorageConfig}
+        />
 
-      {status === AppStatus.GENERATING && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md">
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Analýza noviniek...</h3>
-            <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest">Model: Gemini 1.5 Pro</p>
+        {status === AppStatus.GENERATING && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md">
+            <div className="flex flex-col items-center">
+              <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Analýza noviniek...</h3>
+              <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest">Model: Gemini 1.5 Pro</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Left Panel */}
-        <div className="lg:col-span-4 space-y-8 sticky top-28 h-fit max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
-          <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-dase-blue"></div>
-            <div className="absolute top-8 right-8">
-              <button onClick={() => setIsSettingsOpen(true)} title="Nastavenia" className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-300 rounded-full hover:bg-slate-100 hover:text-dase-blue transition-all">
-                <i className="fas fa-cog text-sm"></i>
+          {/* Left Panel */}
+          <div className="lg:col-span-4 space-y-8 sticky top-28 h-fit max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
+            
+            <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-dase-blue"></div>
+              <div className="absolute top-8 right-8">
+                <button onClick={() => setIsSettingsOpen(true)} title="Nastavenia" className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-300 rounded-full hover:bg-slate-100 hover:text-dase-blue transition-all">
+                  <i className="fas fa-cog text-sm"></i>
+                </button>
+              </div>
+              
+              <h2 className="text-[11px] font-black uppercase tracking-widest text-dase-blue mb-8">Newsletter Architect</h2>
+              
+              <div className="space-y-6 mb-8">
+                {topics.map((topic, index) => (
+                  <div key={topic.id} className="group">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-black text-slate-400">0{index + 1} TÉMA</span>
+                      {topics.length > 1 && (
+                        <button onClick={() => removeTopic(topic.id)} className="text-slate-200 hover:text-dase-accent">
+                          <i className="fas fa-times-circle text-sm"></i>
+                        </button>
+                      )}
+                    </div>
+                    <textarea
+                      className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
+                      placeholder="Sem vložte poznámky k novinke..."
+                      value={topic.notes}
+                      onChange={(e) => handleTopicChange(topic.id, e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={addTopic} 
+                className="w-full py-3 mb-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-[10px] font-black uppercase tracking-widest hover:border-dase-blue hover:text-dase-blue transition-all flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-plus"></i> Pridať tému
+              </button>
+
+              <button
+                onClick={handleGenerate}
+                className="w-full bg-dase-dark text-white font-black py-5 rounded-2xl shadow-xl shadow-slate-200 text-xs uppercase tracking-[0.15em] hover:bg-slate-800 transition-all flex items-center justify-center gap-3 disabled:bg-slate-300"
+                disabled={!gemini}
+              >
+                <i className="fas fa-sparkles"></i>
+                Generovať Draft
               </button>
             </div>
-            
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-dase-blue mb-8">Newsletter Architect</h2>
-            
-            <div className="space-y-6 mb-8">
-              {topics.map((topic, index) => (
-                <div key={topic.id} className="group">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-slate-400">0{index + 1} TÉMA</span>
-                    {topics.length > 1 && (
-                      <button onClick={() => removeTopic(topic.id)} className="text-slate-200 hover:text-dase-accent">
-                        <i className="fas fa-times-circle text-sm"></i>
-                      </button>
-                    )}
-                  </div>
-                  <textarea
-                    className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
-                    placeholder="Sem vložte poznámky k novinke..."
-                    value={topic.notes}
-                    onChange={(e) => handleTopicChange(topic.id, e.target.value)}
-                  />
+
+            <div className="bg-gradient-to-br from-dase-blue/5 to-white p-8 rounded-[32px] border border-dase-blue/10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-dase-blue rounded-lg flex items-center justify-center text-white text-xs">
+                  <i className="fas fa-dna"></i>
                 </div>
-              ))}
-            </div>
-
-            <button 
-              onClick={addTopic} 
-              className="w-full py-3 mb-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-[10px] font-black uppercase tracking-widest hover:border-dase-blue hover:text-dase-blue transition-all flex items-center justify-center gap-2"
-            >
-              <i className="fas fa-plus"></i> Pridať tému
-            </button>
-
-            <button
-              onClick={handleGenerate}
-              className="w-full bg-dase-dark text-white font-black py-5 rounded-2xl shadow-xl shadow-slate-200 text-xs uppercase tracking-[0.15em] hover:bg-slate-800 transition-all flex items-center justify-center gap-3 disabled:bg-slate-300"
-              disabled={!gemini}
-            >
-              <i className="fas fa-sparkles"></i>
-              Generovať Draft
-            </button>
-          </div>
-
-          <div className="bg-gradient-to-br from-dase-blue/5 to-white p-8 rounded-[32px] border border-dase-blue/10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-dase-blue rounded-lg flex items-center justify-center text-white text-xs">
-                <i className="fas fa-dna"></i>
+                <h2 className="text-[11px] font-black text-dase-blue uppercase tracking-widest">Style DNA</h2>
               </div>
-              <h2 className="text-[11px] font-black text-dase-blue uppercase tracking-widest">Style DNA</h2>
-            </div>
-            <p className="text-xs text-slate-500 font-bold italic leading-relaxed mb-6">"{styleProfile.tone}"</p>
-            <div className="flex flex-wrap gap-2">
-              {styleProfile.vocabulary.slice(0, 6).map((v, i) => (
-                <span key={i} className="text-[9px] bg-white text-dase-blue border border-dase-blue/20 px-3 py-1.5 rounded-full font-black uppercase tracking-wider">{v}</span>
-              ))}
+              <p className="text-xs text-slate-500 font-bold italic leading-relaxed mb-6">"{styleProfile.tone}"</p>
+              <div className="flex flex-wrap gap-2">
+                {styleProfile.vocabulary.slice(0, 6).map((v, i) => (
+                  <span key={i} className="text-[9px] bg-white text-dase-blue border border-dase-blue/20 px-3 py-1.5 rounded-full font-black uppercase tracking-wider">{v}</span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-8">
-          <Editor 
-            value={currentDraft} 
-            onChange={setCurrentDraft}
-            onSave={() => {}}
-            isSaving={false}
-            onLearn={handleLearnStyle}
-            isLearning={status === AppStatus.LEARNING}
-          />
+          <div className="lg:col-span-8">
+            <Editor 
+              value={currentDraft} 
+              onChange={setCurrentDraft}
+              onSave={() => {}}
+              isSaving={false}
+              onLearn={handleLearnStyle}
+              isLearning={status === AppStatus.LEARNING}
+            />
+          </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
+    </>
   );
+
 };
 
 export default App;
