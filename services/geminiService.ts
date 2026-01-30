@@ -3,34 +3,14 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { StyleProfile, NewsTopic } from "../types";
 
 export class GeminiService {
-  private getApiKey(): string {
-    // Totálne defenzívny prístup k získaniu kľúča
-    let key = "";
-    
-    try {
-      if (typeof (window as any).process?.env?.API_KEY === 'string' && (window as any).process.env.API_KEY !== "") {
-        key = (window as any).process.env.API_KEY;
-      } else if (typeof process !== 'undefined' && process.env?.API_KEY) {
-        key = process.env.API_KEY;
-      }
-    } catch (e) {
-      console.warn("API Key lookup error", e);
-    }
-    
-    return key;
-  }
-
   async generateNewsletter(
     topics: NewsTopic[], 
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
-    const apiKey = this.getApiKey();
-    if (!apiKey || apiKey === "undefined") {
-      throw new Error("API_KEY nie je nastavený. Prosím pridajte ho do Vercel Environment Variables a urobte Redeploy.");
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
+    // Priame volanie podľa smerníc SDK
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
     const topicsFormatted = topics
       .filter(t => t.notes.trim())
       .map((t, i) => `[ITEM ${i + 1}]\n${t.notes}`)
@@ -58,16 +38,20 @@ export class GeminiService {
       ${topicsFormatted}
     `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: prompt,
-      config: {
-        temperature: 0.8,
-        topP: 0.9,
-      }
-    });
-
-    return response.text || "";
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-pro-preview",
+        contents: prompt,
+        config: {
+          temperature: 0.8,
+          topP: 0.9,
+        }
+      });
+      return response.text || "";
+    } catch (error: any) {
+      console.error("Gemini Generation Error:", error);
+      throw new Error(error?.message || "Chyba pri komunikácii s AI. Skontrolujte API kľúč.");
+    }
   }
 
   async learnStyle(
@@ -75,10 +59,8 @@ export class GeminiService {
     editedVersion: string, 
     currentProfile: StyleProfile
   ): Promise<StyleProfile> {
-    const apiKey = this.getApiKey();
-    if (!apiKey) throw new Error("API_KEY not found.");
-
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
     const prompt = `
       Analyze the differences between the 'AI Draft' and the 'User Final Version'.
       Refine the 'Style Profile' to better match the user's personal voice, vocabulary preferences, and formatting nuances.
