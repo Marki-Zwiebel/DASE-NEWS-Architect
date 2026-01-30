@@ -4,11 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DASE NEWS Architect | Analytics Newsletter Pro</title>
+    <title>DASE NEWS Architect | Newsletter Builder</title>
     
     <script>
-      // Zabezpečenie proti pádu pri chýbajúcom process.env
-      window.process = window.process || { env: {} };
+      // Zabezpečíme, aby process.env existoval aj v browseri bez bundlera
+      if (typeof window !== 'undefined') {
+        window.process = window.process || {};
+        window.process.env = window.process.env || {};
+      }
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -45,13 +48,6 @@
         .preview-content h2 { color: #E05C6F; font-weight: 700; font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 1.25rem; }
         .preview-content p { color: #334155; line-height: 1.7; margin-bottom: 1.25rem; font-size: 1.05rem; }
         .preview-metadata { color: #94A3B8; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; display: flex; gap: 1rem; margin-bottom: 3rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 1rem; }
-        
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-        .animate-float { animation: float 6s ease-in-out infinite; }
     </style>
     <script type="importmap">
 {

@@ -69,6 +69,12 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
+    // Diagnostika kľúča pred spustením
+    if (!process.env.API_KEY) {
+      alert("CHYBA: API_KEY nie je definovaný v process.env. Ak ste vo Verceli, pridajte premennú a urobte Redeploy.");
+      return;
+    }
+
     setStatus(AppStatus.GENERATING);
     try {
       const result = await gemini.generateNewsletter(topics, language, styleProfile);
@@ -76,13 +82,7 @@ const App: React.FC = () => {
       setOriginalDraft(result);
     } catch (error: any) {
       console.error("Newsletter Generation Failed:", error);
-      let errorMsg = "Nepodarilo sa vygenerovať draft.";
-      
-      if (error.message?.includes("API key") || error.message?.includes("API Key")) {
-        errorMsg = "CHYBA: API kľúč nie je dostupný. Ak ste ho práve pridali do Vercelu, urobte REDEPLOY aplikácie (bez cache).";
-      }
-      
-      alert(errorMsg + "\n\nDetaily: " + (error?.message || "Neznáma chyba"));
+      alert("Nepodarilo sa vygenerovať draft.\n\nDetail: " + (error?.message || "Neznáma chyba"));
     } finally {
       setStatus(AppStatus.IDLE);
     }
@@ -109,7 +109,7 @@ const App: React.FC = () => {
       setHistory(updatedHistory);
       await storage.saveHistory(updatedHistory);
       
-      alert("DASE NEWS Architect sa úspešne naučil váš štýl!");
+      alert("DASE Architect sa úspešne naučil váš štýl!");
     } catch (error) {
       alert("Nepodarilo sa aktualizovať štýlový profil.");
     } finally {
@@ -139,15 +139,15 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md">
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight">KREUJEM OBSAH...</h3>
-            <p className="text-slate-400 text-sm font-medium">Gemini analyzuje vaše podklady</p>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">KREUJEM NEWSLETTER...</h3>
+            <p className="text-slate-400 text-sm font-medium">Analýza vašich podkladov pomocou Gemini 3</p>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
-        {/* Left Panel: Workflow */}
+        {/* Left Panel: NEWS Builder */}
         <div className="lg:col-span-4 space-y-8 sticky top-28 h-fit max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
           
           <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
@@ -212,28 +212,6 @@ const App: React.FC = () => {
               ))}
             </div>
           </div>
-
-          {/* History Panel */}
-          {history.length > 0 && (
-            <div className="bg-white p-8 rounded-[32px] border border-slate-50">
-               <h2 className="text-[11px] font-black text-slate-300 uppercase tracking-widest mb-6">Posledné drafty</h2>
-               <div className="space-y-3">
-                 {history.slice(0, 3).map(item => (
-                   <div 
-                    key={item.id} 
-                    onClick={() => handleSelectHistory(item)} 
-                    className="p-4 bg-slate-50 rounded-2xl hover:bg-dase-light cursor-pointer border border-transparent hover:border-dase-blue transition-all group"
-                   >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-black text-dase-accent">{new Date(item.date).toLocaleDateString()}</span>
-                        <i className="fas fa-chevron-right text-[8px] text-slate-300 group-hover:translate-x-1 transition-transform"></i>
-                      </div>
-                      <p className="text-xs font-bold text-slate-600 truncate">{item.content.split('\n')[0].replace('# ', '') || 'Untitled'}</p>
-                   </div>
-                 ))}
-               </div>
-            </div>
-          )}
         </div>
 
         {/* Right Panel: Editor Area */}

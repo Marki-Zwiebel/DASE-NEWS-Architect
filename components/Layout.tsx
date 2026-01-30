@@ -13,7 +13,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isCloud }) => {
         <div className="container mx-auto px-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="bg-slate-900 p-2.5 rounded-xl shadow-lg shadow-slate-200">
-              <i className="fas fa-layer-group text-white text-lg"></i>
+              <i className="fas fa-cubes text-white text-lg"></i>
             </div>
             <div className="flex flex-col">
               <h1 className="text-xl font-black tracking-tighter text-slate-900 leading-none">
@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isCloud }) => {
               {isCloud && (
                 <div className="flex items-center gap-2 mt-1">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Firebase Live</span>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Firebase Sync</span>
                 </div>
               )}
             </div>
@@ -37,7 +37,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isCloud }) => {
             </a>
             <div className="hidden md:block h-4 w-px bg-slate-100"></div>
             <div className="bg-dase-blue/5 text-dase-blue px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">
-              v2.5 Adaptive
+              v2.6 Stable
             </div>
           </nav>
         </div>
