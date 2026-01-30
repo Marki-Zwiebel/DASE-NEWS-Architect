@@ -69,14 +69,14 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
-    // Získanie kľúča bezpečne
-    const apiKey = (window as any).process?.env?.API_KEY;
+    // Získanie kľúča z globálneho objektu
+    const env = (window as any).process?.env || {};
+    const apiKey = env.API_KEY || env.GOOGLE_API_KEY || env.NEXT_PUBLIC_API_KEY;
 
     if (!apiKey) {
-      alert("CHYBA: API kľúč nenájdený.\n\n" + 
-            "1. Vo Verceli sa musí premenná volať presne API_KEY.\n" +
-            "2. Po nastavení premennej musíte urobiť REDEPLOY.\n" +
-            "3. Ak používate lokálne prostredie, uistite sa, že kľúč je v process.env.");
+      const keysFound = Object.keys(env).join(', ') || 'žiadne';
+      alert(`CHYBA: API kľúč nenájdený.\n\nDostupné premenné: ${keysFound}\n\n` + 
+            "TIP: Skúste vo Verceli vytvoriť GOOGLE_API_KEY a urobiť REDEPLOY bez cache.");
       return;
     }
 

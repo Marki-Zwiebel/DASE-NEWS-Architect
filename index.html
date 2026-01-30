@@ -7,12 +7,17 @@
     <title>DASE NEWS Architect | Newsletter Builder</title>
 
     <script>
-      // Musí byť prvý skript v head, aby predbehol načítanie modulov
-      window.process = { 
-        env: { 
-          API_KEY: "" // Sem sa v niektorých prostrediach injektuje kľúč automaticky
-        } 
-      };
+      // DEFENZÍVNY SHIM: Vytvoríme globálny objekt process skôr, než sa spustia moduly.
+      // Toto zabráni chybe "ReferenceError: process is not defined".
+      (function() {
+        window.process = window.process || { env: {} };
+        window.process.env = window.process.env || {};
+        
+        // Ak Vercel injektuje premenné pod inými názvami, namapujeme ich na API_KEY,
+        // ktorý vyžaduje naše SDK.
+        const env = window.process.env;
+        env.API_KEY = env.API_KEY || env.GOOGLE_API_KEY || env.NEXT_PUBLIC_API_KEY || "";
+      })();
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>

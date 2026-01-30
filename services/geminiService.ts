@@ -5,20 +5,21 @@ import { StyleProfile, NewsTopic } from "../types";
 export class GeminiService {
   /**
    * Generuje newsletter pomocou modelu gemini-3-pro-preview.
-   * Premenná prostredia musí byť nastavená ako API_KEY.
    */
   async generateNewsletter(
     topics: NewsTopic[], 
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
-    const apiKey = process.env.API_KEY;
+    // Bezpečný prístup k API kľúču cez shim v index.html
+    const env = (window as any).process?.env || {};
+    const apiKey = env.API_KEY || env.GOOGLE_API_KEY || env.NEXT_PUBLIC_API_KEY;
+    
     if (!apiKey) {
-      throw new Error("API_KEY is missing. In Vercel, please ensure you have set the API_KEY environment variable and triggered a Redeploy.");
+      throw new Error("API_KEY nenájdený. Skontrolujte nastavenia Vercel environment variables.");
     }
     
-    // Inicializácia presne podľa SDK smerníc
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     
     const topicsFormatted = topics
       .filter(t => t.notes.trim())
@@ -41,6 +42,9 @@ export class GeminiService {
          - Use "## [Topic Title]" (H2).
          - Write 2-3 paragraphs.
          - End with: "Viac na: [URL]"
+      
+      INPUT DATA:
+      ${topicsFormatted}
     `;
 
     try {
@@ -64,10 +68,12 @@ export class GeminiService {
     editedVersion: string, 
     currentProfile: StyleProfile
   ): Promise<StyleProfile> {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) throw new Error("API_KEY missing");
+    const env = (window as any).process?.env || {};
+    const apiKey = env.API_KEY || env.GOOGLE_API_KEY || env.NEXT_PUBLIC_API_KEY;
     
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    if (!apiKey) throw new Error("API_KEY chýba");
+    
+    const ai = new GoogleGenAI({ apiKey });
     
     const prompt = `
       Analyze the differences between the 'AI Draft' and the 'User Final Version' for 'DASE NEWS Architect'.
