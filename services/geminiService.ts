@@ -4,15 +4,20 @@ import { StyleProfile, NewsTopic } from "../types";
 
 export class GeminiService {
   private getApiKey(): string {
+    // Totálne defenzívny prístup k získaniu kľúča
+    let key = "";
+    
     try {
-      // Safely access process.env to avoid browser crashes
-      const key = (typeof process !== 'undefined' && process.env && process.env.API_KEY) 
-        || (window as any).process?.env?.API_KEY 
-        || "";
-      return key;
-    } catch {
-      return "";
+      if (typeof (window as any).process?.env?.API_KEY === 'string' && (window as any).process.env.API_KEY !== "") {
+        key = (window as any).process.env.API_KEY;
+      } else if (typeof process !== 'undefined' && process.env?.API_KEY) {
+        key = process.env.API_KEY;
+      }
+    } catch (e) {
+      console.warn("API Key lookup error", e);
     }
+    
+    return key;
   }
 
   async generateNewsletter(
@@ -21,8 +26,8 @@ export class GeminiService {
     styleProfile: StyleProfile
   ): Promise<string> {
     const apiKey = this.getApiKey();
-    if (!apiKey) {
-      throw new Error("Missing API_KEY. Please set it in Vercel environment variables.");
+    if (!apiKey || apiKey === "undefined") {
+      throw new Error("API_KEY nie je nastavený. Prosím pridajte ho do Vercel Environment Variables a urobte Redeploy.");
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -57,8 +62,8 @@ export class GeminiService {
       model: "gemini-3-pro-preview",
       contents: prompt,
       config: {
-        temperature: 0.85,
-        topP: 0.95,
+        temperature: 0.8,
+        topP: 0.9,
       }
     });
 
