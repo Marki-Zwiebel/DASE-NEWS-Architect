@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children, isCloud }) => {
             </div>
             <div className="flex flex-col">
               <h1 className="text-xl font-black tracking-tighter text-slate-900 leading-none">
-                DASE <span className="text-dase-blue uppercase text-sm tracking-widest ml-1">Architect</span>
+                DASE NEWS <span className="text-dase-blue uppercase text-sm tracking-widest ml-1">Architect</span>
               </h1>
               {isCloud && (
                 <div className="flex items-center gap-2 mt-1">

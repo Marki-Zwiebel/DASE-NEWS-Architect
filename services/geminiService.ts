@@ -3,13 +3,21 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { StyleProfile, NewsTopic } from "../types";
 
 export class GeminiService {
+  /**
+   * Generates a newsletter based on topics and a style profile.
+   * Uses gemini-3-pro-preview for high-quality text generation.
+   */
   async generateNewsletter(
     topics: NewsTopic[], 
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
-    // The SDK requires process.env.API_KEY to be available.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // Re-initialize for every call to ensure the latest API_KEY is used.
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      throw new Error("API_KEY is not defined in process.env. Please check your deployment settings.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
     
     const topicsFormatted = topics
       .filter(t => t.notes.trim())
@@ -17,7 +25,7 @@ export class GeminiService {
       .join('\n\n---\n\n');
 
     const prompt = `
-      You are the Senior Technical Editor for DASE Analytics. Your goal is to convert rough notes into a high-quality monthly newsletter.
+      You are the Senior Technical Editor for DASE Analytics. Your goal is to convert rough notes into a high-quality monthly newsletter titled 'DASE NEWS Architect'.
       
       TARGET LANGUAGE: ${language}
       
@@ -40,11 +48,12 @@ export class GeminiService {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3-pro-preview",
         contents: prompt,
         config: {
-          temperature: 0.8,
-          topP: 0.9,
+          temperature: 0.75,
+          topP: 0.95,
+          thinkingConfig: { thinkingBudget: 0 } // Disable thinking for faster text responses
         }
       });
       return response.text || "";
@@ -54,15 +63,22 @@ export class GeminiService {
     }
   }
 
+  /**
+   * Refines the style profile based on user edits.
+   */
   async learnStyle(
     originalDraft: string, 
     editedVersion: string, 
     currentProfile: StyleProfile
   ): Promise<StyleProfile> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      throw new Error("API_KEY is not defined in process.env.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
     
     const prompt = `
-      Analyze the differences between the 'AI Draft' and the 'User Final Version'.
+      Analyze the differences between the 'AI Draft' and the 'User Final Version' for 'DASE NEWS Architect'.
       Refine the 'Style Profile' to better match the user's personal voice, vocabulary preferences, and formatting nuances.
       
       AI DRAFT:
@@ -79,7 +95,7 @@ export class GeminiService {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3-pro-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",

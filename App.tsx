@@ -78,7 +78,8 @@ const App: React.FC = () => {
       console.error("Newsletter Generation Failed:", error);
       let errorMsg = "Nepodarilo sa vygenerovať draft.";
       
-      if (error.message?.includes("API key")) {
+      // Handle the common "API key must be set" browser error gracefully
+      if (error.message?.includes("API key") || error.message?.includes("API Key")) {
         errorMsg = "Chyba API kľúča. Uistite sa, že premenná API_KEY je vo Verceli nastavená pre správne prostredie a urobili ste Redeploy.";
       }
       
@@ -158,7 +159,7 @@ const App: React.FC = () => {
               </button>
             </div>
             
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-dase-blue mb-8">Newsletter Builder</h2>
+            <h2 className="text-[11px] font-black uppercase tracking-widest text-dase-blue mb-8">NEWS Builder</h2>
             
             <div className="space-y-6 mb-8">
               {topics.map((topic, index) => (
