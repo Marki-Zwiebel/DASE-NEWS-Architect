@@ -69,13 +69,14 @@ const App: React.FC = () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
     if (!hasNotes) return;
     
-    // Explicitná kontrola API_KEY
-    const apiKey = process.env.API_KEY;
+    // Získanie kľúča bezpečne
+    const apiKey = (window as any).process?.env?.API_KEY;
 
     if (!apiKey) {
-      alert("CHYBA: API kľúč nenájdený v process.env.API_KEY.\n\n" + 
-            "Vo Verceli sa musí premenná volať presne: API_KEY\n" +
-            "Po pridaní kľúča nezabudnite na REDEPLOY (bez cache).");
+      alert("CHYBA: API kľúč nenájdený.\n\n" + 
+            "1. Vo Verceli sa musí premenná volať presne API_KEY.\n" +
+            "2. Po nastavení premennej musíte urobiť REDEPLOY.\n" +
+            "3. Ak používate lokálne prostredie, uistite sa, že kľúč je v process.env.");
       return;
     }
 
@@ -134,8 +135,8 @@ const App: React.FC = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md">
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Pripravujem podklady...</h3>
-            <p className="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Model: Gemini 3 Pro</p>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Analýza noviniek...</h3>
+            <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest">Model: Gemini 3 Pro</p>
           </div>
         </div>
       )}
@@ -159,7 +160,7 @@ const App: React.FC = () => {
               {topics.map((topic, index) => (
                 <div key={topic.id} className="group">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-slate-400">0{index + 1} NEWS ITEM</span>
+                    <span className="text-[10px] font-black text-slate-400">0{index + 1} TÉMA</span>
                     {topics.length > 1 && (
                       <button onClick={() => removeTopic(topic.id)} className="text-slate-200 hover:text-dase-accent">
                         <i className="fas fa-times-circle text-sm"></i>
@@ -168,7 +169,7 @@ const App: React.FC = () => {
                   </div>
                   <textarea
                     className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
-                    placeholder="Sem vložte poznámky, linky alebo hrubý text..."
+                    placeholder="Sem vložte poznámky k novinke..."
                     value={topic.notes}
                     onChange={(e) => handleTopicChange(topic.id, e.target.value)}
                   />
