@@ -75,7 +75,14 @@ const App: React.FC = () => {
       setCurrentDraft(result);
       setOriginalDraft(result);
     } catch (error: any) {
-      alert("Problém s generovaním: " + (error?.message || "Skontrolujte, či je API_KEY vo Verceli správne nastavený."));
+      console.error("Newsletter Generation Failed:", error);
+      let errorMsg = "Nepodarilo sa vygenerovať draft.";
+      
+      if (error.message?.includes("API key")) {
+        errorMsg = "Chyba API kľúča. Uistite sa, že premenná API_KEY je vo Verceli nastavená pre správne prostredie a urobili ste Redeploy.";
+      }
+      
+      alert(errorMsg + "\n\nDetaily: " + (error?.message || "Neznáma chyba"));
     } finally {
       setStatus(AppStatus.IDLE);
     }

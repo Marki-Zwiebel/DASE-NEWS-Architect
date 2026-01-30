@@ -8,7 +8,7 @@ export class GeminiService {
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
-    // Priame volanie podľa smerníc SDK
+    // The SDK requires process.env.API_KEY to be available.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const topicsFormatted = topics
@@ -40,7 +40,7 @@ export class GeminiService {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           temperature: 0.8,
@@ -49,8 +49,8 @@ export class GeminiService {
       });
       return response.text || "";
     } catch (error: any) {
-      console.error("Gemini Generation Error:", error);
-      throw new Error(error?.message || "Chyba pri komunikácii s AI. Skontrolujte API kľúč.");
+      console.error("Gemini Error:", error);
+      throw error;
     }
   }
 
@@ -77,28 +77,33 @@ export class GeminiService {
       Return a refined JSON profile.
     `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            summary: { type: Type.STRING },
-            vocabulary: { type: Type.ARRAY, items: { type: Type.STRING } },
-            tone: { type: Type.STRING },
-            structure: { type: Type.STRING },
-          },
-          required: ["summary", "vocabulary", "tone", "structure"]
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              summary: { type: Type.STRING },
+              vocabulary: { type: Type.ARRAY, items: { type: Type.STRING } },
+              tone: { type: Type.STRING },
+              structure: { type: Type.STRING },
+            },
+            required: ["summary", "vocabulary", "tone", "structure"]
+          }
         }
-      }
-    });
+      });
 
-    const updated = JSON.parse(response.text || "{}");
-    return {
-      ...updated,
-      lastUpdated: new Date().toISOString()
-    };
+      const updated = JSON.parse(response.text || "{}");
+      return {
+        ...updated,
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("Learn Style Error:", error);
+      return currentProfile;
+    }
   }
 }
