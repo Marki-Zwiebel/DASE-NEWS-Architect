@@ -12,10 +12,9 @@ export class GeminiService {
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
-    // Re-initialize for every call to ensure the latest API_KEY is used.
     const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      throw new Error("API_KEY is not defined in process.env. Please check your deployment settings.");
+      throw new Error("API_KEY is not defined in process.env.");
     }
     const ai = new GoogleGenAI({ apiKey });
     
@@ -53,7 +52,7 @@ export class GeminiService {
         config: {
           temperature: 0.75,
           topP: 0.95,
-          thinkingConfig: { thinkingBudget: 0 } // Disable thinking for faster text responses
+          thinkingConfig: { thinkingBudget: 0 }
         }
       });
       return response.text || "";
@@ -63,9 +62,6 @@ export class GeminiService {
     }
   }
 
-  /**
-   * Refines the style profile based on user edits.
-   */
   async learnStyle(
     originalDraft: string, 
     editedVersion: string, 

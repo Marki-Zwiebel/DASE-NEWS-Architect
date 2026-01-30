@@ -78,9 +78,8 @@ const App: React.FC = () => {
       console.error("Newsletter Generation Failed:", error);
       let errorMsg = "Nepodarilo sa vygenerovať draft.";
       
-      // Handle the common "API key must be set" browser error gracefully
       if (error.message?.includes("API key") || error.message?.includes("API Key")) {
-        errorMsg = "Chyba API kľúča. Uistite sa, že premenná API_KEY je vo Verceli nastavená pre správne prostredie a urobili ste Redeploy.";
+        errorMsg = "CHYBA: API kľúč nie je nastavený. Ak ste ho práve pridali do Vercelu, musíte urobiť REDEPLOY aplikácie, aby sa zmeny prejavili.";
       }
       
       alert(errorMsg + "\n\nDetaily: " + (error?.message || "Neznáma chyba"));
