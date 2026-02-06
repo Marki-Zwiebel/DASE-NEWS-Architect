@@ -5,17 +5,22 @@ import App from './App';
 
 /**
  * BRIDGE: Prepojenie Build-time premenných na Runtime objekt process.env
- * Toto je nevyhnutné, aby @google/genai SDK našlo kľúč v 'process.env.API_KEY'.
+ * Toto je kritické pre fungovanie @google/genai na Verceli.
  */
 if (typeof window !== 'undefined') {
   (window as any).process = (window as any).process || { env: {} };
   
-  // Priradíme hodnotu z import.meta.env (ktorú injektuje Vercel počas buildu)
-  // do objektu, ktorý očakáva SDK.
-  const metaEnv = (import.meta as any).env;
-  if (metaEnv) {
-    (window as any).process.env.API_KEY = metaEnv.VITE_GOOGLE_API_KEY || metaEnv.GOOGLE_API_KEY;
-  }
+  // Vite (ktorý používa Vercel pod kapotou) vyžaduje prefix VITE_
+  const metaEnv = (import.meta as any).env || {};
+  
+  const apiKey = metaEnv.VITE_GOOGLE_API_KEY || metaEnv.GOOGLE_API_KEY || "";
+  
+  (window as any).process.env = {
+    ...((window as any).process.env || {}),
+    API_KEY: apiKey
+  };
+  
+  console.log("DASE Architect: API Key check:", apiKey ? "OK (Hidden)" : "MISSING");
 }
 
 const rootElement = document.getElementById('root');

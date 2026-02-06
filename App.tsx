@@ -9,7 +9,7 @@ import { GeminiService } from './services/geminiService';
 import { StorageService } from './services/storageService';
 
 const App: React.FC = () => {
-  // Zmena na 4 predvolené témy
+  // Predvolene 4 témy podľa zadania
   const [topics, setTopics] = useState<NewsTopic[]>([
     { id: '1', notes: '' },
     { id: '2', notes: '' },
@@ -69,14 +69,21 @@ const App: React.FC = () => {
 
   const handleGenerate = async () => {
     const hasNotes = topics.some(t => t.notes.trim().length > 0);
-    if (!hasNotes) return;
+    if (!hasNotes) {
+      alert("Najprv vložte aspoň nejaké poznámky.");
+      return;
+    }
     
-    // Priama kontrola kľúča
-    if (!process.env.API_KEY) {
-      alert("CHYBA: API kľúč nenájdený v process.env.API_KEY.\n\n" + 
-            "1. Vo Verceli vytvorte premennú GOOGLE_API_KEY.\n" +
-            "2. Spustite REDEPLOY (voľba 'Ignore build cache').\n" +
-            "3. Skontrolujte, či premenná nemá prefix (musí byť presne GOOGLE_API_KEY).");
+    // Kontrola kľúča
+    if (!process.env.API_KEY || process.env.API_KEY === "") {
+      alert(
+        "STOP: API KĽÚČ CHÝBA!\n\n" + 
+        "Aplikácia beží na Verceli, ale nemá prístup ku kľúču.\n\n" +
+        "POSTUP:\n" +
+        "1. Choďte do Vercel Settings -> Environment Variables.\n" +
+        "2. Pridajte premennú VITE_GOOGLE_API_KEY.\n" +
+        "3. Spustite REDEPLOY!"
+      );
       return;
     }
 
@@ -87,7 +94,7 @@ const App: React.FC = () => {
       setOriginalDraft(result);
     } catch (error: any) {
       console.error("Newsletter Generation Failed:", error);
-      alert("Generovanie zlyhalo.\n\nDetail: " + (error?.message || "Neznáma chyba"));
+      alert("Generovanie zlyhalo. Skontrolujte konzolu (F12).");
     } finally {
       setStatus(AppStatus.IDLE);
     }
@@ -136,7 +143,9 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center">
             <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
             <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Analýza noviniek...</h3>
-            <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest">Model: Gemini 3 Pro</p>
+            <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest text-center">
+              Používam model Gemini 3 Pro <br/> pre maximálnu kvalitu
+            </p>
           </div>
         </div>
       )}
@@ -181,12 +190,12 @@ const App: React.FC = () => {
               onClick={addTopic} 
               className="w-full py-3 mb-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-[10px] font-black uppercase tracking-widest hover:border-dase-blue hover:text-dase-blue transition-all flex items-center justify-center gap-2"
             >
-              <i className="fas fa-plus"></i> Pridať tému
+              <i className="fas fa-plus"></i> Pridať ďalšiu tému
             </button>
 
             <button
               onClick={handleGenerate}
-              className="w-full bg-[#E05C6F] text-white font-black py-5 rounded-2xl shadow-xl shadow-pink-100 text-xs uppercase tracking-[0.15em] hover:bg-[#ff6b7f] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+              className="w-full bg-[#E91E63] text-white font-black py-5 rounded-2xl shadow-xl shadow-pink-100 text-xs uppercase tracking-[0.15em] hover:bg-[#D81B60] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             >
               <i className="fas fa-sparkles"></i>
               Generovať Draft
