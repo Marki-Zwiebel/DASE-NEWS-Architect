@@ -9,7 +9,6 @@ import { GeminiService } from './services/geminiService';
 import { StorageService } from './services/storageService';
 
 const App: React.FC = () => {
-  // Predvolene 4 témy podľa zadania
   const [topics, setTopics] = useState<NewsTopic[]>([
     { id: '1', notes: '' },
     { id: '2', notes: '' },
@@ -74,15 +73,17 @@ const App: React.FC = () => {
       return;
     }
     
-    // Kontrola kľúča
-    if (!process.env.API_KEY || process.env.API_KEY === "") {
+    // Finálna kontrola kľúča pred volaním
+    const apiKey = (window as any).process?.env?.API_KEY;
+
+    if (!apiKey || apiKey === "") {
+      console.error("DEBUG: process.env.API_KEY is missing. Env check:", (import.meta as any).env);
       alert(
-        "STOP: API KĽÚČ CHÝBA!\n\n" + 
-        "Aplikácia beží na Verceli, ale nemá prístup ku kľúču.\n\n" +
-        "POSTUP:\n" +
-        "1. Choďte do Vercel Settings -> Environment Variables.\n" +
-        "2. Pridajte premennú VITE_GOOGLE_API_KEY.\n" +
-        "3. Spustite REDEPLOY!"
+        "KĽÚČ STÁLE CHÝBA!\n\n" + 
+        "Aplikácia nevidí tvoj kľúč. Skontroluj prosím:\n" +
+        "1. Vo Verceli má premenná názov: VITE_GOOGLE_API_KEY\n" +
+        "2. Skúsil si REDEPLOY (nie len Refresh) vo Vercel dashboarde?\n\n" +
+        "Ak kľúč vidíš v konzole (F12) pod 'import.meta.env', ale nie tu, kontaktuj podporu."
       );
       return;
     }
@@ -94,7 +95,7 @@ const App: React.FC = () => {
       setOriginalDraft(result);
     } catch (error: any) {
       console.error("Newsletter Generation Failed:", error);
-      alert("Generovanie zlyhalo. Skontrolujte konzolu (F12).");
+      alert("Generovanie zlyhalo. Skontroluj konzolu (F12) pre detaily chyby.");
     } finally {
       setStatus(AppStatus.IDLE);
     }
@@ -151,10 +152,7 @@ const App: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Left Panel */}
         <div className="lg:col-span-4 space-y-8 sticky top-28 h-fit max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
-          
           <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-dase-blue"></div>
             <div className="absolute top-8 right-8">
