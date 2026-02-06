@@ -4,18 +4,24 @@ import { StyleProfile, NewsTopic } from "../types";
 
 export class GeminiService {
   /**
-   * Generuje newsletter pomocou modelu gemini-3-pro-preview.
-   * Striktne využíva process.env.API_KEY injektovaný prostredím.
+   * Získava kľúč dynamicky z globálneho objektu, aby sa vyhla build-time prepísaniu.
    */
+  private getApiKey(): string {
+    // Skúsime prioritne globálny shim z window.process
+    const key = (window as any).process?.env?.API_KEY || process.env.API_KEY;
+    if (!key) {
+      console.error("GeminiService: API_KEY is missing in both window.process and process.env");
+    }
+    return key || "";
+  }
+
   async generateNewsletter(
     topics: NewsTopic[], 
     language: string, 
     styleProfile: StyleProfile
   ): Promise<string> {
-    // Striktne dodržiavame pravidlo inicializácie cez process.env.API_KEY.
-    // Shim v index.html zabezpečí, že ak je kľúč vo Verceli pod iným názvom,
-    // v objekte 'process.env' sa objaví aj ako 'API_KEY'.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = this.getApiKey();
+    const ai = new GoogleGenAI({ apiKey });
     
     const topicsFormatted = topics
       .filter(t => t.notes.trim())
@@ -54,7 +60,7 @@ export class GeminiService {
       });
       return response.text || "";
     } catch (error: any) {
-      console.error("Gemini Error:", error);
+      console.error("Gemini Generation Error:", error);
       throw error;
     }
   }
@@ -64,8 +70,8 @@ export class GeminiService {
     editedVersion: string, 
     currentProfile: StyleProfile
   ): Promise<StyleProfile> {
-    // Striktne dodržiavame pravidlo inicializácie cez process.env.API_KEY.
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = this.getApiKey();
+    const ai = new GoogleGenAI({ apiKey });
     
     const prompt = `
       Analyze the differences between the 'AI Draft' and the 'User Final Version' for 'DASE NEWS Architect'.

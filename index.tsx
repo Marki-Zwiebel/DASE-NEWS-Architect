@@ -9,27 +9,21 @@ import App from './App';
  * s globálnym objektom process.env, ktorý vyžaduje Gemini SDK.
  */
 const initEnvironment = () => {
-  // Inicializácia globálneho process objektu ak neexistuje
   if (typeof window !== 'undefined') {
-    const g = window as any;
-    g.process = g.process || { env: {} };
+    // 1. Pripravíme globálny objekt process
+    (window as any).process = (window as any).process || { env: {} };
     
-    // Získanie kľúča z Vite prostredia (VITE_ prefix je povinný pre browser)
-    const viteKey = (import.meta as any).env?.VITE_GOOGLE_API_KEY;
-    // Záložný pokus ak by bol kľúč dostupný inak
-    const rawKey = (import.meta as any).env?.GOOGLE_API_KEY;
+    // 2. Skúsime vytiahnuť kľúč z import.meta.env (Vite standard)
+    const viteEnv = (import.meta as any).env || {};
+    const apiKey = viteEnv.VITE_GOOGLE_API_KEY || viteEnv.GOOGLE_API_KEY || "";
     
-    const finalKey = viteKey || rawKey || "";
+    // 3. Natlačíme ho do globálneho process.env
+    (window as any).process.env.API_KEY = apiKey;
     
-    g.process.env = {
-      ...g.process.env,
-      API_KEY: finalKey
-    };
-
-    if (finalKey) {
-      console.log("🚀 DASE Environment: API Key successfully linked.");
+    if (apiKey) {
+      console.log("🚀 DASE Environment: API Key found and linked to process.env.API_KEY (Runtime). Length:", apiKey.length);
     } else {
-      console.warn("⚠️ DASE Environment: No API Key found in import.meta.env. Check Vercel settings for VITE_GOOGLE_API_KEY.");
+      console.warn("⚠️ DASE Environment: No API Key found in import.meta.env. Verify VITE_GOOGLE_API_KEY in Vercel.");
     }
   }
 };
