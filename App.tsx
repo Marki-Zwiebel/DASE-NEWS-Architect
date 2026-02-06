@@ -73,17 +73,12 @@ const App: React.FC = () => {
       return;
     }
     
-    // Finálna kontrola kľúča pred volaním
     const apiKey = (window as any).process?.env?.API_KEY;
 
     if (!apiKey || apiKey === "") {
-      console.error("DEBUG: process.env.API_KEY is missing. Env check:", (import.meta as any).env);
       alert(
         "KĽÚČ STÁLE CHÝBA!\n\n" + 
-        "Aplikácia nevidí tvoj kľúč. Skontroluj prosím:\n" +
-        "1. Vo Verceli má premenná názov: VITE_GOOGLE_API_KEY\n" +
-        "2. Skúsil si REDEPLOY (nie len Refresh) vo Vercel dashboarde?\n\n" +
-        "Ak kľúč vidíš v konzole (F12) pod 'import.meta.env', ale nie tu, kontaktuj podporu."
+        "Aplikácia nevidí tvoj kľúč. Skontroluj prosím nastavenia vo Verceli."
       );
       return;
     }
@@ -93,6 +88,10 @@ const App: React.FC = () => {
       const result = await gemini.generateNewsletter(topics, language, styleProfile);
       setCurrentDraft(result);
       setOriginalDraft(result);
+      // Na mobile scrollneme k editoru po vygenerovaní
+      if (window.innerWidth < 1024) {
+        window.scrollTo({ top: document.getElementById('editor-section')?.offsetTop ? document.getElementById('editor-section')!.offsetTop - 100 : 0, behavior: 'smooth' });
+      }
     } catch (error: any) {
       console.error("Newsletter Generation Failed:", error);
       alert("Generovanie zlyhalo. Skontroluj konzolu (F12) pre detaily chyby.");
@@ -140,34 +139,34 @@ const App: React.FC = () => {
       />
 
       {status === AppStatus.GENERATING && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-md px-6">
           <div className="flex flex-col items-center">
-            <div className="w-20 h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
-            <h3 className="text-lg font-black text-slate-900 tracking-tight text-center uppercase">Analýza noviniek...</h3>
-            <p className="text-slate-400 text-[10px] font-black mt-2 uppercase tracking-widest text-center">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-dase-blue/10 border-t-dase-blue rounded-full animate-spin mb-6"></div>
+            <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight text-center uppercase">Analýza noviniek...</h3>
+            <p className="text-slate-400 text-[9px] sm:text-[10px] font-black mt-2 uppercase tracking-widest text-center">
               Používam model Gemini 3 Pro <br/> pre maximálnu kvalitu
             </p>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-4 space-y-8 sticky top-28 h-fit max-h-[calc(100vh-160px)] overflow-y-auto pr-2 custom-scrollbar">
-          <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+        <div className="lg:col-span-4 space-y-6 lg:space-y-8 lg:sticky lg:top-24 h-fit max-h-none lg:max-h-[calc(100vh-120px)] overflow-y-visible lg:overflow-y-auto pr-0 lg:pr-2 custom-scrollbar">
+          <div className="bg-white p-6 sm:p-8 rounded-[24px] sm:rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-dase-blue"></div>
-            <div className="absolute top-8 right-8">
+            <div className="absolute top-6 sm:top-8 right-6 sm:right-8">
               <button onClick={() => setIsSettingsOpen(true)} title="Nastavenia" className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-300 rounded-full hover:bg-slate-100 hover:text-dase-blue transition-all">
                 <i className="fas fa-cog text-sm"></i>
               </button>
             </div>
             
-            <h2 className="text-[11px] font-black uppercase tracking-widest text-dase-blue mb-8">Newsletter Architect</h2>
+            <h2 className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-dase-blue mb-6 sm:mb-8">Newsletter Architect</h2>
             
-            <div className="space-y-6 mb-8">
+            <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
               {topics.map((topic, index) => (
                 <div key={topic.id} className="group">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-slate-400">0{index + 1} TÉMA</span>
+                    <span className="text-[9px] sm:text-[10px] font-black text-slate-400">0{index + 1} TÉMA</span>
                     {topics.length > 1 && (
                       <button onClick={() => removeTopic(topic.id)} className="text-slate-200 hover:text-dase-accent">
                         <i className="fas fa-times-circle text-sm"></i>
@@ -175,7 +174,7 @@ const App: React.FC = () => {
                     )}
                   </div>
                   <textarea
-                    className="w-full h-24 p-4 border border-slate-100 bg-slate-50 rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
+                    className="w-full h-20 sm:h-24 p-3 sm:p-4 border border-slate-100 bg-slate-50 rounded-xl sm:rounded-2xl focus:bg-white outline-none text-sm font-medium text-slate-600 transition-all resize-none"
                     placeholder="Sem vložte poznámky k novinke..."
                     value={topic.notes}
                     onChange={(e) => handleTopicChange(topic.id, e.target.value)}
@@ -186,37 +185,37 @@ const App: React.FC = () => {
 
             <button 
               onClick={addTopic} 
-              className="w-full py-3 mb-6 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-[10px] font-black uppercase tracking-widest hover:border-dase-blue hover:text-dase-blue transition-all flex items-center justify-center gap-2"
+              className="w-full py-2.5 sm:py-3 mb-6 border-2 border-dashed border-slate-100 rounded-xl sm:rounded-2xl text-slate-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest hover:border-dase-blue hover:text-dase-blue transition-all flex items-center justify-center gap-2"
             >
               <i className="fas fa-plus"></i> Pridať ďalšiu tému
             </button>
 
             <button
               onClick={handleGenerate}
-              className="w-full bg-[#E91E63] text-white font-black py-5 rounded-2xl shadow-xl shadow-pink-100 text-xs uppercase tracking-[0.15em] hover:bg-[#D81B60] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+              className="w-full bg-[#E91E63] text-white font-black py-4 sm:py-5 rounded-xl sm:rounded-2xl shadow-xl shadow-pink-100 text-[11px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.15em] hover:bg-[#D81B60] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             >
               <i className="fas fa-sparkles"></i>
               Generovať Draft
             </button>
           </div>
 
-          <div className="bg-gradient-to-br from-dase-blue/5 to-white p-8 rounded-[32px] border border-dase-blue/10">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="bg-gradient-to-br from-dase-blue/5 to-white p-6 sm:p-8 rounded-[24px] sm:rounded-[32px] border border-dase-blue/10">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <div className="w-8 h-8 bg-dase-blue rounded-lg flex items-center justify-center text-white text-xs">
                 <i className="fas fa-dna"></i>
               </div>
-              <h2 className="text-[11px] font-black text-dase-blue uppercase tracking-widest">Style DNA</h2>
+              <h2 className="text-[10px] sm:text-[11px] font-black text-dase-blue uppercase tracking-widest">Style DNA</h2>
             </div>
-            <p className="text-xs text-slate-500 font-bold italic leading-relaxed mb-6">"{styleProfile.tone}"</p>
+            <p className="text-[11px] sm:text-xs text-slate-500 font-bold italic leading-relaxed mb-4 sm:mb-6">"{styleProfile.tone}"</p>
             <div className="flex flex-wrap gap-2">
               {styleProfile.vocabulary.slice(0, 6).map((v, i) => (
-                <span key={i} className="text-[9px] bg-white text-dase-blue border border-dase-blue/20 px-3 py-1.5 rounded-full font-black uppercase tracking-wider">{v}</span>
+                <span key={i} className="text-[8px] sm:text-[9px] bg-white text-dase-blue border border-dase-blue/20 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full font-black uppercase tracking-wider">{v}</span>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-8" id="editor-section">
           <Editor 
             value={currentDraft} 
             onChange={setCurrentDraft}

@@ -43,51 +43,52 @@ const Editor: React.FC<EditorProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-wrap gap-4">
-        <div className="flex bg-gray-100 rounded-xl p-1">
+    <div className="flex flex-col min-h-[500px] lg:h-full bg-white rounded-[24px] sm:rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white border-b border-gray-100 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex bg-gray-100 rounded-xl p-1 w-full sm:w-auto">
           <button 
             onClick={() => setIsPreview(false)}
-            className={`px-5 py-2 text-xs font-bold rounded-lg transition-all ${!isPreview ? 'bg-white shadow-sm text-dase-accent' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all ${!isPreview ? 'bg-white shadow-sm text-dase-accent' : 'text-gray-500 hover:text-gray-700'}`}
           >
             EDITOR
           </button>
           <button 
             onClick={() => setIsPreview(true)}
-            className={`px-5 py-2 text-xs font-bold rounded-lg transition-all ${isPreview ? 'bg-white shadow-sm text-dase-accent' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all ${isPreview ? 'bg-white shadow-sm text-dase-accent' : 'text-gray-500 hover:text-gray-700'}`}
           >
             NÁHĽAD
           </button>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 custom-scrollbar justify-center">
           <button
             onClick={() => {
               navigator.clipboard.writeText(value);
               alert("Markdown bol skopírovaný.");
             }}
-            className="px-3 py-2 text-gray-400 hover:text-dase-blue transition-colors text-xs font-bold uppercase flex items-center gap-1"
+            className="shrink-0 px-3 py-2 text-gray-400 hover:text-dase-blue transition-colors text-[10px] sm:text-xs font-bold uppercase flex items-center gap-1"
           >
             <i className="fas fa-copy"></i> MD
           </button>
 
           <button
             onClick={copyAsHTML}
-            className="px-4 py-2 bg-dase-blue hover:opacity-90 text-white transition-all text-xs font-bold rounded-xl flex items-center gap-2 shadow-sm"
+            className="shrink-0 px-3 sm:px-4 py-2 bg-dase-blue hover:opacity-90 text-white transition-all text-[10px] sm:text-xs font-bold rounded-xl flex items-center gap-2 shadow-sm"
           >
-            <i className="fas fa-code"></i> KOPÍROVAŤ HTML
+            <i className="fas fa-code"></i> HTML
           </button>
 
-          <div className="h-6 w-[1px] bg-gray-100 mx-1"></div>
+          <div className="shrink-0 h-6 w-[1px] bg-gray-100 mx-1 hidden sm:block"></div>
 
           <button
             onClick={onLearn}
             disabled={isLearning || !value}
-            className="flex items-center gap-2 px-5 py-2 bg-dase-accent hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-30 shadow-sm"
+            className="shrink-0 flex items-center gap-2 px-4 sm:px-5 py-2 bg-dase-accent hover:opacity-90 text-white rounded-xl text-[10px] sm:text-xs font-bold transition-all disabled:opacity-30 shadow-sm"
             title="Vylepšiť model na základe vašich úprav v texte"
           >
             {isLearning ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-brain"></i>}
-            VYLEPŠIŤ MOJÍM ŠTÝLOM
+            <span className="hidden xs:inline">VYLEPŠIŤ ŠTÝL</span>
+            <span className="xs:hidden">VYLEPŠIŤ</span>
           </button>
         </div>
       </div>
@@ -95,20 +96,20 @@ const Editor: React.FC<EditorProps> = ({
       <div className="flex-grow bg-[#FDFDFD]">
         {!isPreview ? (
           <textarea
-            className="w-full h-[650px] p-8 focus:outline-none font-mono text-sm leading-relaxed text-gray-700 bg-transparent border-none placeholder-gray-300"
+            className="w-full min-h-[400px] lg:h-[650px] p-4 sm:p-8 focus:outline-none font-mono text-[13px] sm:text-sm leading-relaxed text-gray-700 bg-transparent border-none placeholder-gray-300 resize-none"
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Obsah news sa objaví tu..."
           />
         ) : (
-          <div className="w-full h-[650px] p-12 overflow-y-auto preview-content custom-scrollbar">
+          <div className="w-full min-h-[400px] lg:h-[650px] p-6 sm:p-12 overflow-y-auto preview-content custom-scrollbar">
             {value ? (
-              <>
+              <div className="max-w-3xl mx-auto">
                 <div className="preview-metadata">
                   <span>Novinky</span>
-                  <span>|</span>
+                  <span className="hidden sm:inline">|</span>
                   <span>DASE Team</span>
-                  <span>|</span>
+                  <span className="hidden sm:inline">|</span>
                   <span>{new Date().toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
                 {value.split('\n').map((line, i) => {
@@ -119,11 +120,11 @@ const Editor: React.FC<EditorProps> = ({
                   if (line.trim() === '') return <div key={i} className="h-6" />;
                   return <p key={i} className="mb-5 text-gray-600 leading-relaxed text-[16px] font-medium">{line}</p>;
                 })}
-              </>
+              </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-gray-300">
-                <i className="fas fa-newspaper text-6xl mb-4"></i>
-                <p className="font-bold uppercase tracking-widest text-xs">Zatiaľ prázdne</p>
+              <div className="flex flex-col items-center justify-center h-full text-gray-300 min-h-[300px]">
+                <i className="fas fa-newspaper text-5xl sm:text-6xl mb-4"></i>
+                <p className="font-bold uppercase tracking-widest text-[10px] sm:text-xs">Zatiaľ prázdne</p>
               </div>
             )}
           </div>
